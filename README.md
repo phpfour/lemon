@@ -6,15 +6,15 @@ content negotiation, expected format, etc will be added soon.
 How to get started
 ==================
 
-1. Clone the repository in your local machine
-
-2. Install composer and download the required dependencies (in the Lemon directory).
+Clone the repository in your local machine. Install composer and download the
+required dependencies (in the Lemon directory):
 
     curl -s http://getcomposer.org/installer | php
     php composer.phar install
 
-3. Visit to the resource URL. Optionally, set up a VirtualHost to the web root.
+Visit to the resource URL. Optionally, set up a VirtualHost to the web root:
 
     http://localhost/Lemon/web/hello
+    http://lemon.dev/hello
 
-4. Enjoy!
+Enjoy!
