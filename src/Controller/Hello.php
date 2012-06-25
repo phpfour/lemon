@@ -1,12 +1,12 @@
 <?php
 
-namespace Resource;
+namespace Controller;
 
 use Symfony\Component\HttpFoundation\Response;
 
 class Hello extends Base
 {
-    public function get()
+    public function world()
     {
         $response = new Response();
 

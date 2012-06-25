@@ -1,9 +1,14 @@
 <?php
 
-require_once __DIR__ . '/autoload.php';
-
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request,
+    Symfony\Component\HttpFoundation\Response,
+    Symfony\Component\HttpKernel\Controller\ControllerResolver,
+    Symfony\Component\Routing\Route,
+    Symfony\Component\Routing\RouteCollection,
+    Symfony\Component\Routing\RequestContext,
+    Symfony\Component\Routing\Matcher\UrlMatcher,
+    Symfony\Component\Routing\Exception\ResourceNotFoundException,
+    Symfony\Component\Routing\Exception\MethodNotAllowedException;
 
 class AppKernel
 {
@@ -12,44 +17,72 @@ class AppKernel
      */
     protected $request;
 
-    public function __construct(Request $request)
+    /**
+     * @var array
+     */
+    protected $routes;
+
+    /**
+     * @var array
+     */
+    protected $conf;
+
+    public function __construct(Request $request, $routes = array(), $conf = array())
     {
         $this->request = $request;
+        $this->routes = $routes;
+        $this->conf = $conf;
     }
 
     public function handle()
     {
-        $resourceClass = $this->getResourceClass();
-
-        if ($resourceClass === false) {
+        try {
+            $this->matchRoute();
+            $response = $this->loadResource();
+        } catch (ResourceNotFoundException $e) {
             $response = new Response();
-            $response->setStatusCode(406);
-        } else {
-            $response = $this->loadResource($resourceClass);
+            $response->setStatusCode(404);
+        } catch (MethodNotAllowedException $e) {
+            $response = new Response();
+            $response->setStatusCode(405);
         }
 
         $response->prepare($this->request);
         $response->send();
     }
 
-    private function loadResource($resourceClass)
+    private function loadResource()
     {
-        $method = strtolower($this->request->getMethod());
-        $resource = new $resourceClass($this->request);
-        $response = $resource->$method();
+        $resolver = new ControllerResolver();
 
+        $controller = $resolver->getController($this->request);
+        $arguments = $resolver->getArguments($this->request, $controller);
+
+        $controller[0]->setRequest($this->request);
+        $controller[0]->setConfiguration($this->conf);
+        $controller[0]->init();
+
+        $response = call_user_func_array($controller, $arguments);
         return $response;
     }
 
-    private function getResourceClass()
+    private function matchRoute()
     {
-        $paths = explode('/', $this->request->getPathInfo());
-        $resource = 'Resource\\' . ucfirst($paths[1]);
+        $routes = new RouteCollection();
 
-        if (class_exists($resource)) {
-            return $resource;
+        foreach ($this->routes as $key => $route) {
+            if (!empty($route['requirements'])) {
+                $routes->add($key, new Route($route['pattern'], $route['defaults'], $route['requirements']));
+            } else {
+                $routes->add($key, new Route($route['pattern'], $route['defaults']));
+            }
         }
 
-        return false;
+        $context = new RequestContext();
+        $context->fromRequest($this->request);
+        $matcher = new UrlMatcher($routes, $context);
+
+        $attributes = $matcher->match($this->request->getPathInfo());
+        $this->request->attributes->add($attributes);
     }
 }

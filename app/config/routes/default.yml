@@ -1,0 +1,4 @@
+hello_world:
+  pattern: /hello
+  defaults: { _controller: Controller\Hello::world }
+  requirements: { _method: GET }
