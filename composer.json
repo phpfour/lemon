@@ -5,6 +5,11 @@
         "symfony/yaml": ">=2.0",
         "symfony/console": ">=2.0",
         "symfony/http-kernel": "2.1.*",
-        "symfony/routing": "2.1.*"
+        "symfony/routing": "2.1.*",
+        "respect/validation": "dev-master",
+        "sami/sami": "dev-master",
+        "doctrine/mongodb-odm": "dev-master",
+        "doctrine/dbal": "2.4.x-dev",
+        "doctrine/orm": "dev-master"
     }
 }

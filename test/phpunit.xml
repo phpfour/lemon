@@ -1,0 +1,23 @@
+<phpunit bootstrap="bootstrap.php" colors="true" backupGlobals="false">
+
+    <testsuite name="LM Service TestSuite">
+        <directory>./src/</directory>
+    </testsuite>
+
+    <filter>
+        <whitelist>
+            <directory suffix=".php">../src/</directory>
+            <exclude>
+                <directory suffix=".php">../app/</directory>
+                <directory suffix=".php">../web/</directory>
+                <directory suffix=".php">../vendor/</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+
+    <logging>
+        <log type="coverage-html" target="./log/report" charset="UTF-8" yui="true" highlight="true" lowUpperBound="50" highLowerBound="80"/>
+        <log type="testdox-html" target="./log/testdox.html" />
+    </logging>
+
+</phpunit>

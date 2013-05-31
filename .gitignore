@@ -1,5 +1,8 @@
-/vendor
 app/cache
+app/config/parameter.yml
+
+/vendor
+
 composer.phar
 composer.lock
 .idea

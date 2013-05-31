@@ -1,0 +1,15 @@
+mongodb:
+  host: '127.0.0.1'
+  port: 27017
+  database: 'loosemonkies'
+
+mysql:
+    host: '127.0.0.1'
+    port: 3306
+    user: root
+    pass: 123456
+    db: lm_service
+
+memcache:
+    host: 127.0.0.1
+    port: 11211
