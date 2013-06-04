@@ -13,6 +13,11 @@ use Symfony\Component\HttpFoundation\Request,
 class AppKernel
 {
     /**
+     * @var Doctrine\ODM\MongoDB\DocumentManager
+     */
+    protected $dm;
+
+    /**
      * @var Symfony\Component\HttpFoundation\Request
      */
     protected $request;
@@ -27,14 +32,33 @@ class AppKernel
      */
     protected $conf;
 
-    public function __construct(Request $request, $routes = array(), $conf = array())
+    /**
+     * @var DBALConnection
+     */
+    protected $conn;
+
+    /**
+     * @var Pimple
+     */
+    protected $container;
+
+    /**
+     * @var \Memcache
+     */
+    protected $cache;
+
+    public function __construct(Request $request, $container)
     {
         $this->request = $request;
-        $this->routes = $routes;
-        $this->conf = $conf;
+
+        $this->dm = $container['dm'];
+        $this->conf = $container['conf'];
+        $this->conn = $container['dbal'];
+        $this->routes = $container['routes'];
+        $this->cache = $container['cache'];
     }
 
-    public function handle()
+    public function handle($return = false)
     {
         try {
             $this->matchRoute();
@@ -48,6 +72,13 @@ class AppKernel
         }
 
         $response->prepare($this->request);
+
+        if ($return) {
+            return $response;
+        }
+
+        $this->logTrace($response);
+
         $response->send();
     }
 
@@ -59,7 +90,7 @@ class AppKernel
         $arguments = $resolver->getArguments($this->request, $controller);
 
         $controller[0]->setRequest($this->request);
-        $controller[0]->setConfiguration($this->conf);
+        $controller[0]->setContainer($this->container);
         $controller[0]->init();
 
         $response = call_user_func_array($controller, $arguments);
@@ -84,5 +115,23 @@ class AppKernel
 
         $attributes = $matcher->match($this->request->getPathInfo());
         $this->request->attributes->add($attributes);
+    }
+
+    private function logTrace($response)
+    {
+        $logContent = "
+Response Type    : Success
+Route            : " . $_SERVER['REQUEST_URI'] . "
+Method           : " . $_SERVER['REQUEST_METHOD'] . "
+Auth-Token       : " . $this->request->headers->get('auth-token') . "
+Request Data     : " . json_encode($this->request->request->all()) . "
+Requested By     : " . $_SERVER['REMOTE_ADDR'] . "
+User Agent       : " . $this->request->headers->get('user-agent') . "
+Controller Route : " . $this->request->attributes->get('_controller') . "
+Response Code    : " . $response->getStatusCode() . "
+Response Content : " . $response->getContent() . "\n\n";
+
+        $fp = @fopen(__DIR__.'/logs/service.log', 'a+');
+        @fwrite($fp, $logContent);
     }
 }

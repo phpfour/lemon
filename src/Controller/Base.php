@@ -13,6 +13,16 @@ abstract class Base
     protected $request;
 
     /**
+     * @var \Doctrine\ODM\MongoDB\DocumentManager
+     */
+    protected $dm;
+
+    /**
+     * @var \Doctrine\ORM\EntityManager
+     */
+    protected $em;
+
+    /**
      * @var \Symfony\Component\HttpFoundation\Response;
      */
     protected $response;
@@ -23,6 +33,26 @@ abstract class Base
     protected $config;
 
     /**
+     * @var DBALConnection
+     */
+    protected $conn;
+
+    /**
+     * @var \Pimple
+     */
+    protected $container;
+
+    public function setContainer($container)
+    {
+        $this->container = $container;
+
+        $this->dm = $container['dm'];
+        $this->em = $container['em'];
+        $this->conn = $container['dbal'];
+        $this->config = $container['conf'];
+    }
+
+    /**
      * Inject the Request object for further use.
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
@@ -30,16 +60,6 @@ abstract class Base
     public function setRequest($request)
     {
         $this->request = $request;
-    }
-
-    /**
-     * Inject the configuration.
-     *
-     * @param $config array
-     */
-    public function setConfiguration($config)
-    {
-        $this->config = $config;
     }
 
     /**
