@@ -2,8 +2,9 @@
 
 namespace Controller;
 
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Request,
+Symfony\Component\HttpFoundation\Response,
+Doctrine\DBAL\Connection as DBALConnection;
 
 abstract class Base
 {
@@ -11,6 +12,11 @@ abstract class Base
      * @var \Symfony\Component\HttpFoundation\Request
      */
     protected $request;
+
+    /**
+     * @var \Doctrine\ORM\EntityManager
+     */
+    protected $em;
 
     /**
      * @var \Symfony\Component\HttpFoundation\Response;
@@ -22,6 +28,24 @@ abstract class Base
      */
     protected $config;
 
+     /**
+     * @var DBALConnection
+     */
+    protected $conn;
+
+    /**
+     * @var \Pimple
+     */
+    protected $container;
+
+    public function setContainer($container)
+    {
+        $this->container = $container;
+        $this->em = $container['em'];
+        $this->conn = $container['dbal'];
+        $this->config = $container['conf'];
+    }
+
     /**
      * Inject the Request object for further use.
      *
@@ -32,15 +56,6 @@ abstract class Base
         $this->request = $request;
     }
 
-    /**
-     * Inject the configuration.
-     *
-     * @param $config array
-     */
-    public function setConfiguration($config)
-    {
-        $this->config = $config;
-    }
 
     /**
      * Initializer function to be used by child classes.

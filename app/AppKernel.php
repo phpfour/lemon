@@ -8,7 +8,8 @@ use Symfony\Component\HttpFoundation\Request,
     Symfony\Component\Routing\RequestContext,
     Symfony\Component\Routing\Matcher\UrlMatcher,
     Symfony\Component\Routing\Exception\ResourceNotFoundException,
-    Symfony\Component\Routing\Exception\MethodNotAllowedException;
+    Symfony\Component\Routing\Exception\MethodNotAllowedException,
+    Doctrine\DBAL\Connection as DBALConnection;
 
 class AppKernel
 {
@@ -27,11 +28,25 @@ class AppKernel
      */
     protected $conf;
 
-    public function __construct(Request $request, $routes = array(), $conf = array())
+    /**
+     * @var DBALConnection
+     */
+    protected $conn;
+
+    /**
+     * @var Pimple
+     */
+    protected $container;
+
+    public function __construct(Request $request, $container)
     {
         $this->request = $request;
-        $this->routes = $routes;
-        $this->conf = $conf;
+        $this->container = $container;
+
+        $this->conf = $container['conf'];
+        $this->conn = $container['dbal'];
+        $this->routes = $container['routes'];
+
     }
 
     public function handle()
@@ -59,7 +74,7 @@ class AppKernel
         $arguments = $resolver->getArguments($this->request, $controller);
 
         $controller[0]->setRequest($this->request);
-        $controller[0]->setConfiguration($this->conf);
+        $controller[0]->setContainer($this->container);
         $controller[0]->init();
 
         $response = call_user_func_array($controller, $arguments);

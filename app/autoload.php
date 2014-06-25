@@ -8,7 +8,9 @@ $loader = new UniversalClassLoader();
 $loader->register();
 
 $src = array(
-    'Controller' => __DIR__ . '/../src'
+    'Controller' => __DIR__ . '/../src',
+    'Repository' => __DIR__ . '/../src',
+    'Entities'   => __DIR__ . '/../src'
 );
 
 $loader->registerNamespaces($src);
